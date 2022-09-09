@@ -30,7 +30,7 @@ class CFactorsLib(object):
     def read_by_date(self, t_factor: str, t_trade_date: str):
         cmd_sql_for_inquiry = "SELECT instrument, value FROM {} where trade_date = {}".format(t_factor, t_trade_date)
         rows = self._cursor.execute(cmd_sql_for_inquiry).fetchall()
-        t_df = pd.DataFrame(data=rows, columns=[["instrument", "factor"]]).set_index("instrument")
+        t_df = pd.DataFrame(data=rows, columns=[["instrument", "factor"]])
         return 0
 
     def close(self):
