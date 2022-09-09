@@ -1,4 +1,5 @@
 from setup import *
+from CustomClasses import CFactorsLib
 
 
 @timer
@@ -59,6 +60,21 @@ def test_to_db(t_df: pd.DataFrame, t_save_dir: str,
 
 
 @timer
+def test_to_db_class(t_df: pd.DataFrame, t_save_dir: str,
+                     t_calendar: CCalendar, t_bgn_date: str, t_stp_date: str):
+    # check db path
+    db_path = os.path.join(t_save_dir, "MyFactorsLib.db")
+    if os.path.exists(db_path):
+        os.remove(db_path)
+    fb = CFactorsLib(db_path)
+    fb.add_factor_table(t_factor="factor")
+    for trade_date in t_calendar.get_iter_list(t_bgn_date=t_bgn_date, t_stp_date=t_stp_date, t_ascending=True):
+        fb.update(t_factor="factor", t_trade_date=trade_date, t_factors_df=t_df)
+    fb.close()
+    return 0
+
+
+@timer
 def test_read_csv(t_save_dir: str,
                   t_calendar: CCalendar, t_bgn_date: str, t_stp_date: str):
     for trade_date in t_calendar.get_iter_list(t_bgn_date=t_bgn_date, t_stp_date=t_stp_date, t_ascending=True):
@@ -99,6 +115,18 @@ def test_read_db(t_save_dir: str,
     return 0
 
 
+@timer
+def test_read_db_class(t_save_dir: str,
+                       t_calendar: CCalendar, t_bgn_date: str, t_stp_date: str):
+    # check db path
+    db_path = os.path.join(t_save_dir, "MyFactorsLib.db")
+    fb = CFactorsLib(db_path)
+    for trade_date in t_calendar.get_iter_list(t_bgn_date=t_bgn_date, t_stp_date=t_stp_date, t_ascending=True):
+        fb.read_by_date(t_factor="factor", t_trade_date=trade_date)
+    fb.close()
+    return 0
+
+
 instrument_list = [
     "AU.SHF",
     "AG.SHF",
@@ -118,6 +146,8 @@ df = pd.DataFrame({
     "factor": np.random.random(size=list_size * k)
 })
 
+df2 = df.set_index("instrument")
+
 print(df)
 print("\n" * 2)
 
@@ -128,10 +158,12 @@ stp_date = "20220825"
 
 # test write
 test_to_csv(t_df=df, t_save_dir=project_data_dir, t_calendar=cne_calendar, t_bgn_date=bgn_date, t_stp_date=stp_date)
-# test_to_hdf5(t_df=df, t_save_dir=project_data_dir, t_calendar=cne_calendar, t_bgn_date=bgn_date, t_stp_date=stp_date)
+# test_to_hdf5(t_df=df2, t_save_dir=project_data_dir, t_calendar=cne_calendar, t_bgn_date=bgn_date, t_stp_date=stp_date)
 test_to_db(t_df=df, t_save_dir=project_data_dir, t_calendar=cne_calendar, t_bgn_date=bgn_date, t_stp_date=stp_date)
+test_to_db_class(t_df=df2, t_save_dir=project_data_dir, t_calendar=cne_calendar, t_bgn_date=bgn_date, t_stp_date=stp_date)
 
 # test read
 test_read_csv(t_save_dir=project_data_dir, t_calendar=cne_calendar, t_bgn_date=bgn_date, t_stp_date=stp_date)
 # test_read_hdf5(t_save_dir=project_data_dir, t_calendar=cne_calendar, t_bgn_date=bgn_date, t_stp_date=stp_date)
 test_read_db(t_save_dir=project_data_dir, t_calendar=cne_calendar, t_bgn_date=bgn_date, t_stp_date=stp_date)
+test_read_db_class(t_save_dir=project_data_dir, t_calendar=cne_calendar, t_bgn_date=bgn_date, t_stp_date=stp_date)
